@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Hometalk</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/league.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+		<style>
+			.progressbar {
+				counter-reset: step;
+			}
+			.progressbar li {
+				list-style-type: none;
+				width: 25%;
+				/*float: left;*/
+				display: inline-block;
+				font-size: 20px;
+				position: relative;
+				text-align: center;
+				text-transform: uppercase;
+				color: #7d7d7d;
+			}
+			.progressbar li:before {
+				width: 30px;
+				height: 30px;
+				content: counter(step);
+				counter-increment: step;
+				line-height: 30px;
+				border: 2px solid #7d7d7d;
+				display: block;
+				text-align: center;
+				margin: 0 auto 10px auto;
+				border-radius: 50%;
+				background-color: white;
+			}
+			.progressbar li:after {
+				width: 100%;
+				height: 2px;
+				content: '';
+				position: absolute;
+				background-color: #7d7d7d;
+				top: 15px;
+				left: -50%;
+				z-index: -1;
+			}
+			.progressbar li:first-child:after {
+				content: none;
+			}
+			.progressbar li.active {
+				color: green;
+			}
+			.progressbar li.active:before {
+				border-color: #55b776;
+			}
+			.progressbar li.active + li:after {
+				background-color: #55b776;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Build System</h1>
+				</section>
+				<section data-background="#13DAEC">
+					<h1>CSS</h1>
+					<div>
+						<ul class="progressbar" style="width: 605px; text-align: center">
+							<li>Less</li>
+							<li>clean-css</li>
+						</ul>
+					</div>
+				</section>
+				<section>
+					<h2>Less</h2>
+					<a href="http://lesscss.org/" target="_blank">http://lesscss.org</a>
+					<p><a href="http://less2css.org/" target="_blank" style="font-size: 22px">less2css</a></p>
+					<pre>
+						<code data-trim contenteditable style="font-size: 1.2em;line-height: 1.3em">
+.box-shadow(@style, @c)	when (iscolor(@c)) {
+  -webkit-box-shadow: @style @c;
+  box-shadow:         @style @c;
+}
+.box-shadow(@style, @alpha: 50%) when (isnumber(@alpha)) {
+  .box-shadow(@style, rgba(0, 0, 0, @alpha));
+}
+.box {
+  div { .box-shadow(0 0 5px, 30%) }
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h2>clean-css</h2>
+					<h4>A fast, efficient, and well tested CSS minifier for node.js</h4>
+					<a href="https://github.com/jakubpawlowicz/clean-css" target="_blank">https://github.com/jakubpawlowicz/clean-css</a>
+					<p><a href="http://adam.id.au/clean-css-online/" target="_blank" style="font-size: 22px">clean-css online</a></p>
+				</section>
+
+				<section data-background="#4faa82">
+					<h1>HTML</h1>
+					<div>
+						<ul class="progressbar" style="width: 605px; text-align: center">
+							<li>HTML Minifier</li>
+							<li>HTML --> JS</li>
+						</ul>
+					</div>
+				</section>
+				<section>
+					<h2>HTML Minifier</h2>
+					<h4>Javascript-based HTML compressor/minifier (with Node.js support)</h4>
+					<a href="https://github.com/kangax/html-minifier" target="_blank">https://github.com/kangax/html-minifier</a>
+					<p><a href="https://kangax.github.io/html-minifier/" target="_blank" style="font-size: 22px">HTML Minifier (v3.0.2)</a></p>
+				</section>
+				<section data-background="#e4bb45">
+					<h1>JS</h1>
+					<ul class="progressbar" style="width: 605px; text-align: center">
+						<li>Babel</li>
+						<li>ng-annotate</li>
+						<li>UglifyJS2</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Babel (ES6)</h2>
+					<a href="https://babeljs.io/" target="_blank">https://babeljs.io</a>
+					<p><a href="http://babeljs.io/repl" target="_blank" style="font-size: 22px">Babel REPL</a></p>
+					<div style="font-size: 22px; margin-top: 35px">
+						<p><a href="http://kangax.github.io/compat-table/es6/" target="_blank">ECMAScript 6 compatibility table</a></p>
+						<p><a href="http://www.2ality.com/2015/02/using-es6-today-minsk.html" target="_blank">A 90 minute overview of ECMAScript 6 (video)</a></p>
+						<p><a href="https://leanpub.com/understandinges6" target="_blank">Understanding ECMAScript 6 (Nicholas C. Zakas)</a></p>
+					</div>
+				</section>
+				<section>
+					<h2>ng-annotate</h2>
+					<h4>Add, remove and rebuild AngularJS dependency injection annotations</h4>
+					<a href="https://github.com/olov/ng-annotate" target="_blank">https://github.com/olov/ng-annotate</a>
+					<pre>
+						<code class="hljs hljs javascript hljs" data-trim contenteditable style="font-size: 1.2em;line-height: 1.3em">
+angular.module('HT').controller('PanicCtrl', function($scope) {
+    $scope.message = 'OH NO!';
+});</code>
+					</pre>
+				</section>
+				<section>
+					<h2>UglifyJS2</h2>
+					<h4>JavaScript parser / mangler / compressor / beautifier toolkit</h4>
+					<a href="https://github.com/mishoo/UglifyJS2" target="_blank">https://github.com/mishoo/UglifyJS2</a>
+					<p><a href="https://skalman.github.io/UglifyJS-online/" target="_blank" style="font-size: 22px">UglifyJS: Online JavaScript minifier</a></p>
+					<pre>
+						<code class="hljs hljs javascript hljs" data-trim contenteditable style="font-size: 1.2em;line-height: 1.3em">
+angular.module('HT').controller('PanicCtrl',function(e){e.message="OH NO!"});
+						</code>
+					</pre>
+				</section>
+				<section data-background="#cf4646">
+					<h1>Problems</h1>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
