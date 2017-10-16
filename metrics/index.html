@@ -59,73 +59,61 @@
 					<img src="images/metrics.png">
 				</section>
 				<section>
-					https://techblog.shutl.com/2014/12/hooking-up-statsd-graphite-and-nagios-to-create-metrics-based-alerts/
-					https://www.digitalocean.com/community/tutorials/an-introduction-to-tracking-statistics-with-graphite-statsd-and-collectd
+					<img src="images/metrics-architecture.png">
 				</section>
 				<section>
-					<h2>clean-css</h2>
-					<h4>A fast, efficient, and well tested CSS minifier for node.js</h4>
-					<a href="https://github.com/jakubpawlowicz/clean-css" target="_blank">https://github.com/jakubpawlowicz/clean-css</a>
-					<p><a href="http://adam.id.au/clean-css-online/" target="_blank" style="font-size: 22px">clean-css online</a></p>
-				</section>
+					<section>
+						<h2>StatsD</h2>
 
-				<section data-background="#4faa82">
-					<h1>HTML</h1>
-					<div>
-						<ul class="progressbar" style="width: 605px; text-align: center">
-							<li>HTML Minifier</li>
-							<li>HTML --> JS</li>
+						Open sourced by Etsy in 2011, statsd is a small daemon, written in JavaScript and running on NodeJS, which listens on a UDP socket for metric data, such as counters or timing information. This data is stored in memory and every 10 seconds (a configurable interval) it gets flushed out to a back end. In our case this back end is another open source application called Graphite.
+						<br><br>
+						<a href="https://codeascraft.com/2011/02/15/measure-anything-measure-everything" target="_blank">https://codeascraft.com/2011/02/15/measure-anything-measure-everything</a>
+					</section>
+
+
+					<section>
+						<h2>StatsD Metric Types</h2>
+						<ul>
+							<li>Counting</li>
+							<li>Timing</li>
+							<li>Gauges</li>
+							<li>Sets</li>
 						</ul>
-					</div>
+					</section>
+
+					<!--https://techblog.shutl.com/2014/12/hooking-up-statsd-graphite-and-nagios-to-create-metrics-based-alerts/-->
+					<!--https://www.digitalocean.com/community/tutorials/an-introduction-to-tracking-statistics-with-graphite-statsd-and-collectd-->
 				</section>
 				<section>
-					<h2>HTML Minifier</h2>
-					<h4>Javascript-based HTML compressor/minifier (with Node.js support)</h4>
-					<a href="https://github.com/kangax/html-minifier" target="_blank">https://github.com/kangax/html-minifier</a>
-					<p><a href="https://kangax.github.io/html-minifier/" target="_blank" style="font-size: 22px">HTML Minifier (v3.0.2)</a></p>
+					<h3>collectd – The system statistics collection daemon</h3>
+					<p>collectd is a daemon which collects system and application performance metrics periodically and provides mechanisms to store the values in a variety of ways, for example in RRD files.</p>
+					<h3>What does collectd do?</h3>
+					collectd gathers metrics from various sources, e.g. the operating system, applications, logfiles and external devices, and stores this information or makes it available over the network
 				</section>
-				<section data-background="#e4bb45">
-					<h1>JS</h1>
-					<ul class="progressbar" style="width: 605px; text-align: center">
-						<li>Babel</li>
-						<li>ng-annotate</li>
-						<li>UglifyJS2</li>
+				<section>
+					<h2>Graphite</h2>
+					<img src="images/metrics_graphite.png" style="width: 70%">
+					<ul>
+						<li>Graphite Web App</li>
+						<li>Carbon</li>
+						<li>Whisper</li>
 					</ul>
 				</section>
 				<section>
-					<h2>Babel (ES6)</h2>
-					<a href="https://babeljs.io/" target="_blank">https://babeljs.io</a>
-					<p><a href="http://babeljs.io/repl" target="_blank" style="font-size: 22px">Babel REPL</a></p>
-					<div style="font-size: 22px; margin-top: 35px">
-						<p><a href="http://kangax.github.io/compat-table/es6/" target="_blank">ECMAScript 6 compatibility table</a></p>
-						<p><a href="http://www.2ality.com/2015/02/using-es6-today-minsk.html" target="_blank">A 90 minute overview of ECMAScript 6 (video)</a></p>
-						<p><a href="https://leanpub.com/understandinges6" target="_blank">Understanding ECMAScript 6 (Nicholas C. Zakas)</a></p>
-					</div>
-				</section>
-				<section>
-					<h2>ng-annotate</h2>
-					<h4>Add, remove and rebuild AngularJS dependency injection annotations</h4>
-					<a href="https://github.com/olov/ng-annotate" target="_blank">https://github.com/olov/ng-annotate</a>
+					<h2>How to collect stats?</h2>
+					<h5>Timing</h5>
 					<pre>
-						<code class="hljs hljs javascript hljs" data-trim contenteditable style="font-size: 1.2em;line-height: 1.3em">
-angular.module('HT').controller('PanicCtrl', function($scope) {
-    $scope.message = 'OH NO!';
-});</code>
+						<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+Metrics_Collector::getInstance()->timing('save_comment', $time);</code>
+					</pre>
+					<h5>Counting</h5>
+					<pre>
+						<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+Metrics_Collector::getInstance()->increment_counter('comments.error');</code>
 					</pre>
 				</section>
 				<section>
-					<h2>UglifyJS2</h2>
-					<h4>JavaScript parser / mangler / compressor / beautifier toolkit</h4>
-					<a href="https://github.com/mishoo/UglifyJS2" target="_blank">https://github.com/mishoo/UglifyJS2</a>
-					<p><a href="https://skalman.github.io/UglifyJS-online/" target="_blank" style="font-size: 22px">UglifyJS: Online JavaScript minifier</a></p>
-					<pre>
-						<code class="hljs hljs javascript hljs" data-trim contenteditable style="font-size: 1.2em;line-height: 1.3em">
-angular.module('HT').controller('PanicCtrl',function(e){e.message="OH NO!"});
-						</code>
-					</pre>
-				</section>
-				<section data-background="#cf4646">
-					<h1>Problems</h1>
+					<a href="https://www.digitalocean.com/community/tutorials/an-introduction-to-tracking-statistics-with-graphite-statsd-and-collectd">https://www.digitalocean.com/community/tutorials/an-introduction-to-tracking-statistics-with-graphite-statsd-and-collectd</a>
 				</section>
 			</div>
 		</div>
