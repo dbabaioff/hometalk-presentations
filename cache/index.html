@@ -55,8 +55,291 @@
 
 					<h1>Cache</h1>
 				</section>
-				<section></section>
-				<section></section>
+				<section>
+					<h2>Caches:</h2>
+					<ul>
+						<li>Model</li>
+						<li>REST model/collection</li>
+						<li>Request URL</li>
+						<li>CDN</li>
+						<li>JS</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Model Cache</h2>
+					Model_Activity_Item (Memcached)
+					<pre>
+						<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+function __construct($id = 0, $record=null, $skipCache = false)
+{
+    if($record && is_scalar($record)) $record=null; //invalid record
+    // first we check into the cache
+    if(!$record && $id)
+    {
+	    if (! $skipCache)
+	    {
+		    $record = $this->getDataFromCache($id);
+	    }
+
+    }
+
+    parent::__construct ($id, $record);
+
+    // if the model was not cached, we set it into the cache
+    if(!$record && $id)
+    {
+	    // we exclude some types that should anyway normally not be instanciated
+	    $excluded_types = ['like', 'comment', 'comment_answer', 'comment_question'];
+	    if (!in_array($this->type, $excluded_types))
+	    {
+		    $this->setToCache();
+	    }
+    }
+}
+						</code>
+					</pre>
+
+				</section>
+				<section>
+					<section>
+						<h2>REST object/collection</h2>
+						<img src="images/rest.png">
+					</section>
+					<section>
+						<p>Rest_Base</p>
+						<h6>kohana/application/classes/rest/base.php</h6>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+public function to_array($decorate = true)
+{
+    $model_data = $this->get_model_data();
+
+    $this->rest_data = array();
+    $cache           = Cache::instance();
+    $key_data        = $this->get_key_data();
+    $key             = Keys_REST::generic($key_data);
+    if ($this->cache_lifetime && $this->use_cache)
+    {
+	    $this->rest_data = $cache->get($key);
+    }
+
+    if (!$this->rest_data)
+    {
+	    $this->rest_data = $this->_to_array($model_data);
+
+	    if ($this->cache_lifetime >= 0)
+	    {
+		    /** @var Cache $cache */
+		    /** @var String $key */ // I don't like yellow
+		    $cache->set($key, $this->rest_data, ($this->cache_lifetime) ?: 60);
+	    }
+    }
+
+    if ($decorate)
+    {
+	    $this->rest_data = Decorator::decorate($this->rest_data);
+    }
+
+    $this->runMappings();
+    $this->runPostProcessFunctions();
+
+    return $this->rest_data;
+}
+						</code>
+					</pre>
+					</section>
+					<section>
+						<p>Controller_REST</p>
+						<h6>kohana/application/classes/controller/rest.php</h6>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+public function after()
+{
+    parent::after();
+    $response_cleaned = null;
+
+    if ($this->rest_data)
+    {
+        $this->_response_body = $this->rest_data->to_array();
+    }
+
+    $response = $this->_response_body;
+
+    $response = ($response) ?: ((is_array($response)) ? [] : '');
+
+    $response_cleaned = $this->serialize($response);
+    $response_cleaned_utf8 = UTF8::clean($response_cleaned);
+    if ($response_cleaned === false || $response_cleaned_utf8 != $response_cleaned )
+    {
+        if ($response instanceof REST_Base)
+	{
+	    $response = $response->to_array(); // <===== !!! =====
+	}
+	$response_cleaned = $this->serialize(UTF8::clean($response));
+    }
+
+   ...
+
+   $this->response->body($response_cleaned); // <===== !!! ======
+
+   ...
+}
+							</code>
+						</pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Request URL</h2>
+					</section>
+					<section>
+						<p>Cache_Request (get)</p>
+						<h6>include/header.php</h6>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+//check cache
+if($output = Cache_Request::get_cache($_SERVER['REQUEST_URI']))
+{
+    if(rand(0,100) === 1) LoggerHT::instance()->info('Pulled from cache',['url' => $_SERVER['REQUEST_URI'] ]);
+    foreach($output['headers'] as $key => $value)
+    {
+        header($key .': '.$value);
+    }
+    header('X-HT-Request-Cache: HIT');
+
+    echo $output['content'];
+    exit;
+}
+							</code>
+						</pre>
+					</section>
+					<section>
+						<p>Cache_Request (set)</p>
+						<h6>Controller_REST - kohana/application/classes/controller/rest.php</h6>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+public function after()
+{
+    ...
+
+    if($this->request->cache) // <==== !!! ====
+    {
+        if(!$response_cleaned || !is_string($response_cleaned) || !trim($response_cleaned,'"{}[]')) //look for broken caching
+        {
+            if($_SERVER["REQUEST_METHOD"]=="GET") //
+            {
+                $qs = http_build_query($this->request->query());
+                $qs .= ($qs) ? "?$qs" : "";
+                 LoggerHT::instance()->info('invalid cache results', ['url' => $this->request->url() . $qs, 'orig_response' => json_encode($response), 'response_cleaned' => $response_cleaned, 'page_url' => $_SERVER['REQUEST_URI'], 'server_arr' => json_encode($_SERVER), 'request_obj' => json_encode($this->request)]);
+            }
+        }
+        else
+        {
+            $ttl = $this->request->cache_ttl? $this->request->cache_ttl : 600;
+            $this->response->headers('Surrogate-Control', 'max-age='.$ttl);
+            $this->response->headers('X-HT-Expires', gmdate('D, d M Y H:i:s \G\M\T', time() + $ttl));
+
+            // Cache in memcache only for clean urls (without querystring)
+            if (($this->page_num <= 1 && !$this->request->query('filters')))
+            {
+                $output['headers'] = $this->response->headers()->getArrayCopy();
+                $output['content'] = $response_cleaned;
+                Cache_Request::set_cache($this->request->url().'?'.http_build_query($this->request->query()),$output,$ttl);
+                LoggerHT::instance()->info('set cache',['url' => $this->request->uri()]);
+            }
+        }
+     }
+
+    ...
+}
+
+							</code>
+						</pre>
+					</section>
+					<section>
+						<h2>How to cache?</h2>
+						<p>kohana/application/classes/controller/rest/v2/activity/item.php</p>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+public function action_index_related_posts()
+{
+    $this->request->cache = true; // <==== !!! ====
+
+    $limit       = (int)$this->request->query('limit') ?:3;
+    $activity_id = $activity_id = $this->request->param('id');
+    $activity = Model_Activity_Item::factory($activity_id);
+    if(!$activity_id || !$activity->loaded() || !in_array($activity->type, Model_Activity_Item::$static_page_types) )
+    {
+        throw new HTTP_REST_Exception_404();
+    }
+
+    $related_post_models = $activity->related_posts($limit);
+    $related_post_models['related_posts'] = REST_Collection_Activity_Item::factory($related_post_models['related_posts'],
+        REST_Activity_Item::FEED_RELATED_POST().' breadcrumbs_info', REST_Activity_Item::FEED_RELATED_POST_OPTIONS());
+
+    $related_post_models['related_posts']  = $related_post_models['related_posts'] ->to_array();
+    $related_post_models['related_posts']  = $this->get_post_type( $related_post_models['related_posts'],$activity_id);
+
+    $related_post_models['related_content'] = REST_Collection_Activity_Item::factory($related_post_models['related_content'], REST_Activity_Item::FEED_RELATED_POST() . ' text breadcrumbs_info', REST_Activity_Item::FEED_RELATED_POST_OPTIONS());
+    $related_post_models['related_content'] =  $related_post_models['related_content']->to_array();
+
+    $this->_response_body = $related_post_models;
+}
+							</code>
+						</pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>CDN</h2>
+					</section>
+					<section>
+						<h2>How to cache? (JS)</h2>
+						<p><b>Factory: Feed</b> - docroot/www/resources/js/angular/factories/feed.js</p>
+						<pre>
+							<code class="hljs hljs js hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+angular.module('HT').factory('Feed', function(Collection, Resource) {
+    return {
+        following: Collection({
+            resource: Resource('/feeds'),
+            decorator: 'FeedDecorator',
+            pagination: {limit: 10}
+        }),
+
+        posts: Collection({
+            resource: Resource('/posts?sort=:sort&type=:type', {sort: '@sort', type: '@type'}),
+            decorator: 'FeedDecorator',
+            pagination: {limit: 10}
+        }),
+
+        clips: Collection({
+            resource: Resource('/posts', {type: 'clips'}),
+            decorator: 'FeedDecorator',
+            pagination: {limit: 15}
+        }),
+
+        comboHome: Resource('/feed', {}, {}, {loadFromCache : true}), // <==== !!! ====
+        comboSearch: Resource('/search/:path', {path: '@path'})
+
+    };
+});
+							</code>
+						</pre>
+					</section>
+					<section>
+						<h2>How to cache? (PHP)</h2>
+						<p>on Controller_REST_V2_... ⟶ action_index() / action_index_...()</p>
+						<pre>
+							<code class="hljs hljs php hljs" data-trim contenteditable style="font-size: 1.1em;line-height: 1.3em">
+								$this->request->cache = true;
+							</code>
+						</pre>
+					</section>
+				</section>
+				<section>
+					<h2>JS</h2>
+
+				</section>
 			</div>
 		</div>
 
